@@ -1,18 +1,16 @@
-import os
 import subprocess
+import sys
 
-dependencies = ["matplotlib"]
-
-for package in dependencies:
-    try:
-        __import__(package)
-    except ImportError:
-        subprocess.check_call(["pip", "install", package])
+# Install matplotlib jika belum ada
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "matplotlib"])
+    import matplotlib.pyplot as plt
 
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
 
 # STEP 1: Persiapkan DataFrame
