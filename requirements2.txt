@@ -1,5 +1,0 @@
-streamlit
-pandas
-numpy
-matplotlib==3.7.2
-seaborn
