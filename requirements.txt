@@ -3,3 +3,5 @@ matplotlib>=3.5
 pandas==1.5.3
 streamlit>=1.24
 pybind11>=2.12
+seaborn==0.12.2
+
