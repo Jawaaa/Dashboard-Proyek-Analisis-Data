@@ -52,64 +52,74 @@ season_filter = st.sidebar.selectbox("Pilih Musim", options=[1, 2, 3, 4], format
 filtered_data = all_df[(all_df["yr_x"] == year_filter) & (all_df["season_x"] == season_filter)]
 
 # STEP 4: Bangun Visualisasi
-# Total Penyewaan per Musim
-seasons = ["Spring", "Summer", "Fall", "Winter"]
-filtered_season_data = season_data[season_data["season_x"] == season_data["season_y"]]
+# jumlah Total Penyewaan sepeda rata2 per Musim
+season_avg = day_df.groupby("season").agg({"cnt": "mean"}).reset_index()
+season_mapping = {1: "Spring", 2: "Summer", 3: "Fall", 4: "Winter"}
+season_avg["season"] = season_avg["season"].map(season_mapping)
 
-fig, ax = plt.subplots(figsize=(10, 6))
-x = np.arange(len(seasons))
-bar_width = 0.35
-
-ax.bar(x - bar_width / 2, filtered_season_data["cnt_x"], width=bar_width, label="Count of Total Day", color="#72BCD4")
-ax.bar(x + bar_width / 2, filtered_season_data["cnt_y"], width=bar_width, label="Count of Total Hour", color="#F6A9A9")
-
-ax.set_title("Total Rentals by Season", fontsize=16)
-ax.set_xlabel("Season", fontsize=12)
-ax.set_ylabel("Total Rentals", fontsize=12)
-ax.set_xticks(ticks=x)
-ax.set_xticklabels(seasons, fontsize=10)
-ax.legend(title="Rental Type", loc="upper left")
-ax.grid(alpha=0.3)
-ax.set_yscale('log')
-
-st.pyplot(fig)
+plt.figure(figsize=(8, 6))
+sns.barplot(x="season", y="cnt", data=season_avg, palette="Blues_d")
+plt.title("Rata-rata Jumlah Penyewaan Sepeda Harian Berdasarkan Musim (2011-2012)", fontsize=14)
+plt.xlabel("Musim", fontsize=12)
+plt.ylabel("Rata-rata Penyewaan Sepeda", fontsize=12)
+plt.grid(alpha=0.3)
+plt.show()
 
 # Total Penyewaan Sepeda per Tahun
-fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+day_df["month"] = pd.to_datetime(day_df["dteday"]).dt.month
+monthly_data = day_df.groupby(["month", "yr"]).agg({"casual": "mean", "registered": "mean"}).reset_index()
 
-sns.barplot(x="yr_x", y="cnt_x", data=year_data, ax=axes[0, 0], color="skyblue", label="day")
-sns.barplot(x="yr_y", y="cnt_y", data=year_data, ax=axes[0, 0], color="orange", label="hour")
-axes[0, 0].set_title("Total Penyewaan Sepeda per Tahun")
-axes[0, 0].set_xlabel("Tahun (0=2011 , 1=2012)")
-axes[0, 0].set_ylabel("Total Penyewaan")
-axes[0, 0].legend()
-axes[0, 0].set_yscale('log')
+plt.figure(figsize=(12, 7))
 
-sns.barplot(x="yr_x", y="registered_x", data=year_data, ax=axes[0, 1], color="green", label="day")
-sns.barplot(x="yr_y", y="registered_y", data=year_data, ax=axes[0, 1], color="red", label="hour")
-axes[0, 1].set_title("Total Pengguna Terdaftar per Tahun")
-axes[0, 1].set_xlabel("Tahun (0=2011 , 1=2012)")
-axes[0, 1].set_ylabel("Total Pengguna Terdaftar")
-axes[0, 1].legend()
-axes[0, 1].set_yscale('log')
+# Plot untuk pengguna casual
+sns.lineplot(
+    x="month", 
+    y="casual", 
+    data=monthly_data[monthly_data["yr"] == 0], 
+    marker="o", 
+    label="Casual 2011", 
+    color="red"
+)
+sns.lineplot(
+    x="month", 
+    y="casual", 
+    data=monthly_data[monthly_data["yr"] == 1], 
+    marker="o", 
+    label="Casual 2012", 
+    color="orange"
+)
 
-sns.barplot(x="yr_x", y="casual_x", data=year_data, ax=axes[1, 0], color="purple", label="day")
-sns.barplot(x="yr_y", y="casual_y", data=year_data, ax=axes[1, 0], color="yellow", label="hour")
-axes[1, 0].set_title("Total Pengguna Casual per Tahun")
-axes[1, 0].set_xlabel("Tahun (0=2011 , 1=2012)")
-axes[1, 0].set_ylabel("Total Pengguna Casual")
-axes[1, 0].legend()
-axes[1, 0].set_yscale('log')
+# Plot untuk pengguna registered
+sns.lineplot(
+    x="month", 
+    y="registered", 
+    data=monthly_data[monthly_data["yr"] == 0], 
+    marker="o", 
+    label="Registered 2011", 
+    color="blue"
+)
+sns.lineplot(
+    x="month", 
+    y="registered", 
+    data=monthly_data[monthly_data["yr"] == 1], 
+    marker="o", 
+    label="Registered 2012", 
+    color="green"
+)
 
-sns.barplot(x="yr_x", y="cnt_x", data=year_data, ax=axes[1, 1], color="skyblue", label="day")
-sns.barplot(x="yr_y", y="cnt_y", data=year_data, ax=axes[1, 1], color="orange", label="hour")
-axes[1, 1].set_title("Perbandingan Total Penyewaan per Tahun")
-axes[1, 1].set_xlabel("Tahun (0=2011 , 1=2012)")
-axes[1, 1].set_ylabel("Total Penyewaan Sepeda")
-axes[1, 1].legend()
-axes[1, 1].set_yscale('log')
+# Menambahkan detail pada plot
+plt.title("Pola Perubahan Penyewaan Sepeda Bulanan\n(Casual vs Registered, Tahun 2011 dan 2012)", fontsize=14)
+plt.xlabel("Bulan", fontsize=12)
+plt.ylabel("Rata-rata Penyewaan Sepeda", fontsize=12)
+plt.xticks(
+    ticks=np.arange(1, 13), 
+    labels=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+)
+plt.legend(title="Kategori Pengguna dan Tahun")
+plt.grid(alpha=0.3)
+plt.show()
 
-st.pyplot(fig)
+
 
 # STEP 5: Ekspor dan Tampilkan Data
 st.sidebar.download_button("Download Data Gabungan", data=all_df.to_csv(index=False), file_name="all_data_sewa_sepeda.csv")
