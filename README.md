@@ -1,5 +1,3 @@
-Setup Environment - Visual Studio Code
-  pip install -r requirements.txt
 
 Setup Environment - Shell/Terminal
   python -m venv env
